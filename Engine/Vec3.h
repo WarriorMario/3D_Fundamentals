@@ -21,6 +21,7 @@
 #pragma once
 
 #include "ChiliMath.h"
+#include "Vec2.h"
 
 template <typename T>
 class _Vec3 : public _Vec2<T>
@@ -133,6 +134,20 @@ public:
 public:
 	T z;
 };
+
+template <typename T>
+static _Vec3<T> Dot(const _Vec3<T> &lhs, const _Vec3<T> &rhs)
+{
+	return lhs*rhs;
+}
+
+template <typename T>
+static _Vec3<T> Cross(const _Vec3<T> &lhs, const _Vec3<T> &rhs)
+{
+	return _Vec3<T>(lhs.y*rhs.z - rhs.y*lhs.z,
+		lhs.z * rhs.x - rhs.z * lhs.x,
+		lhs.x * rhs.y - rhs.x * lhs.y);
+}
 
 typedef _Vec3<float> Vec3;
 typedef _Vec3<double> Ved3;
