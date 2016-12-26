@@ -21,7 +21,6 @@
 #pragma once
 
 #include "ChiliMath.h"
-#include "Vec2.h"
 
 template <typename T>
 class _Vec3 : public _Vec2<T>
@@ -136,7 +135,7 @@ public:
 };
 
 template <typename T>
-static _Vec3<T> Dot(const _Vec3<T> &lhs, const _Vec3<T> &rhs)
+static float Dot(const _Vec3<T> &lhs, const _Vec3<T> &rhs)
 {
 	return lhs*rhs;
 }
