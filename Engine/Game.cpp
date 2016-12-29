@@ -21,6 +21,7 @@
 #include "MainWindow.h"
 #include "Game.h"
 #include "Ray.h"
+#include "Sphere.h"
 
 Game::Game( MainWindow& wnd )
 	:
@@ -54,6 +55,8 @@ void Game::ComposeFrame()
 	Vec3 p1 = screenCenter + Vec3(1, -1, 0);
 	Vec3 p2 = screenCenter + Vec3(-1, 1, 0);
 
+	Sphere sphere = Sphere(Vec3(0, 0, 5), 1.0f);
+
 	// Create a ray for every pixel on the screen
 	for (int y = 0; y < Graphics::ScreenHeight; ++y)
 	{
@@ -64,6 +67,11 @@ void Game::ComposeFrame()
 			Vec3 pointOnScreen = p0 + (p1 - p0)*u + (p2 - p0)*v;
 			Vec3 rayDirection = pointOnScreen - camPos;
 			Ray ray = Ray(camPos, rayDirection.GetNormalized(), 10000000.0f);
+
+			if (ray.RaySphereIntersection(sphere) == true)
+			{
+				gfx.PutPixel(x, y, Color(255, 0, 0));
+			}
 		}
 	}
 }
