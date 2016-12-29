@@ -152,6 +152,7 @@
     <ClInclude Include="Mat3.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="PubeScreenTransformer.h" />
+    <ClInclude Include="Ray.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Surface.h" />
