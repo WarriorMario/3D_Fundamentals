@@ -53,4 +53,17 @@ void Game::ComposeFrame()
 	Vec3 p0 = screenCenter + Vec3(-1, -1, 0);
 	Vec3 p1 = screenCenter + Vec3(1, -1, 0);
 	Vec3 p2 = screenCenter + Vec3(-1, 1, 0);
+
+	// Create a ray for every pixel on the screen
+	for (int y = 0; y < Graphics::ScreenHeight; ++y)
+	{
+		for (int x = 0; x < Graphics::ScreenWidth; ++x)
+		{
+			float u = (float)x / Graphics::ScreenWidth;
+			float v = (float)y / Graphics::ScreenHeight;
+			Vec3 pointOnScreen = p0 + (p1 - p0)*u + (p2 - p0)*v;
+			Vec3 rayDirection = pointOnScreen - camPos;
+			Ray ray = Ray(camPos, rayDirection.GetNormalized(), 10000000.0f);
+		}
+	}
 }
