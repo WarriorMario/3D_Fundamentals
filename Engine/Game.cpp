@@ -20,7 +20,7 @@
 ******************************************************************************************/
 #include "MainWindow.h"
 #include "Game.h"
-#include "Mat3.h"
+#include "Ray.h"
 
 Game::Game( MainWindow& wnd )
 	:
@@ -44,4 +44,13 @@ void Game::UpdateModel()
 
 void Game::ComposeFrame()
 {
+	// Camera and screen
+	Vec3 camPos = Vec3(0, 0, 0);
+	Vec3 viewDir = Vec3(0, 0, 1);
+	float screenDistance = 1.0f;
+
+	Vec3 screenCenter = camPos + viewDir*screenDistance;
+	Vec3 p0 = screenCenter + Vec3(-1, -1, 0);
+	Vec3 p1 = screenCenter + Vec3(1, -1, 0);
+	Vec3 p2 = screenCenter + Vec3(-1, 1, 0);
 }
