@@ -7,13 +7,14 @@ bool Ray::RaySphereIntersection(const Sphere& sphere)
 	float projection = Dot(originToSphere, direction);
 	Vec3 distanceVector = originToSphere - direction*projection;
 	float distanceSq = Dot(distanceVector, distanceVector);
-	
-	if (distanceSq > sphere.radius*sphere.radius)
+	float radiusSq = sphere.radius*sphere.radius;
+
+	if (distanceSq > radiusSq)
 	{
 		return false;
 	}
 
-	float newLength = sphere.radius - sqrtf(distanceSq);
+	float newLength = projection - sqrtf(radiusSq-distanceSq);
 	if (newLength < length&&newLength>0.0f)
 	{
 		length = newLength;
