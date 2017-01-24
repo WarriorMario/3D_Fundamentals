@@ -51,9 +51,9 @@ void Game::ComposeFrame()
 	float screenDistance = 1.0f;
 
 	Vec3 screenCenter = camPos + viewDir*screenDistance;
-	Vec3 p0 = screenCenter + Vec3(-1, -1, 0);
-	Vec3 p1 = screenCenter + Vec3(1, -1, 0);
-	Vec3 p2 = screenCenter + Vec3(-1, 1, 0);
+	Vec3 p0 = screenCenter + Vec3(-1, 1, 0);
+	Vec3 p1 = screenCenter + Vec3(1, 1, 0);
+	Vec3 p2 = screenCenter + Vec3(-1, -1, 0);
 
 	Sphere sphere = Sphere(Vec3(0, 0, 5), 1.0f);
 
