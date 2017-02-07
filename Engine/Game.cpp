@@ -22,6 +22,7 @@
 #include "Game.h"
 #include "Ray.h"
 #include "Sphere.h"
+#include "Mat3.h"
 
 Game::Game( MainWindow& wnd )
 	:
@@ -41,19 +42,58 @@ void Game::Go()
 void Game::UpdateModel()
 {
 	const float dt = 1.0f / 60.0f;
+	if (wnd.kbd.KeyIsPressed('W'))
+	{
+		theta_x = wrap_angle(theta_x - dTheta * dt);
+	}
+	if (wnd.kbd.KeyIsPressed('A'))
+	{
+		theta_y = wrap_angle(theta_y - dTheta * dt);
+	}
+	if (wnd.kbd.KeyIsPressed('S'))
+	{
+		theta_x = wrap_angle(theta_x + dTheta * dt);
+	}
+	if (wnd.kbd.KeyIsPressed('D'))
+	{
+		theta_y = wrap_angle(theta_y + dTheta * dt);
+	}
+
+	const Mat3 rot =
+		Mat3::RotationX(theta_x)*
+		Mat3::RotationY(theta_y);
+	if (wnd.kbd.KeyIsPressed(VK_UP))
+	{
+		pos += Vec3(0, 0, 1)*rot;
+	}
+	if (wnd.kbd.KeyIsPressed(VK_DOWN))
+	{
+		pos += Vec3(0, 0, -1)*rot;
+	}
+	if (wnd.kbd.KeyIsPressed(VK_LEFT))
+	{
+		pos += Vec3(-1, 0, 0)*rot;
+	}
+	if (wnd.kbd.KeyIsPressed(VK_RIGHT))
+	{
+		pos += Vec3(1, 0, 0)*rot;
+	}
 }
 
 void Game::ComposeFrame()
 {
 	// Camera and screen
-	Vec3 camPos = Vec3(0, 0, 0);
-	Vec3 viewDir = Vec3(0, 0, 1);
+	Vec3 camPos = pos;
+	const Mat3 rot =
+		Mat3::RotationX(theta_x)*
+		Mat3::RotationY(theta_y);
+	Vec3 viewDir = Vec3(0, 0, 1)*rot;
 	float screenDistance = 1.0f;
 
 	Vec3 screenCenter = camPos + viewDir*screenDistance;
-	Vec3 p0 = screenCenter + Vec3(-1, 1, 0);
-	Vec3 p1 = screenCenter + Vec3(1, 1, 0);
-	Vec3 p2 = screenCenter + Vec3(-1, -1, 0);
+	Vec3 p0 = screenCenter + Vec3(-1, 1, 0)*rot;
+	Vec3 p1 = screenCenter + Vec3(1, 1, 0)*rot;
+	Vec3 p2 = screenCenter + Vec3(-1, -1, 0)*rot;
 
 	Sphere sphere = Sphere(Vec3(0, 0, 5), 1.0f);
 
