@@ -22,6 +22,7 @@
 #include "Game.h"
 #include "Ray.h"
 #include "Mat3.h"
+#include "Light.h"
 
 Game::Game( MainWindow& wnd )
 	:
@@ -104,6 +105,8 @@ void Game::ComposeFrame()
 	Vec3 p1 = screenCenter + Vec3(1, 1, 0)*rot;
 	Vec3 p2 = screenCenter + Vec3(-1, -1, 0)*rot;
 	
+	Light light = Light(Vec3(20, 25, 25), Colors::White);
+
 	// Create a ray for every pixel on the screen
 	for (int y = 0; y < Graphics::ScreenHeight; ++y)
 	{
@@ -115,12 +118,27 @@ void Game::ComposeFrame()
 			Vec3 rayDirection = pointOnScreen - camPos;
 			Ray ray = Ray(camPos, rayDirection.GetNormalized(), 10000000.0f);
 			// Intersect all spheres
+			int hitIndex = -1;
 			for (int i = 0; i < spheres.size(); ++i)
 			{
 				if (ray.RaySphereIntersection(spheres[i]) == true)
 				{
-					gfx.PutPixel(x, y, spheres[i].color);
+					hitIndex = i;
 				}
+			}
+			if (hitIndex != -1)
+			{
+				Vec3 hitPoint = ray.origin + ray.direction*ray.length;
+				Vec3 normal = (hitPoint - spheres[hitIndex].position);
+				normal.Normalize();
+				Vec3 lightRayDirection = (light.position - hitPoint);
+				lightRayDirection.Normalize();
+				float d = Dot(normal, lightRayDirection);
+				if (d < 0.0f)
+				{
+					d = 0.0f;
+				}
+				gfx.PutPixel(x, y, spheres[hitIndex].color * light.color * d);
 			}
 		}
 	}
