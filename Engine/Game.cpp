@@ -132,13 +132,28 @@ void Game::ComposeFrame()
 				Vec3 normal = (hitPoint - spheres[hitIndex].position);
 				normal.Normalize();
 				Vec3 lightRayDirection = (light.position - hitPoint);
+				float length = lightRayDirection.Len();
 				lightRayDirection.Normalize();
-				float d = Dot(normal, lightRayDirection);
-				if (d < 0.0f)
+				Ray lightRay = Ray(hitPoint, lightRayDirection, length);
+				// If any of the spheres occlude the light
+				bool occluded = false;
+				for (int i = 0; i < spheres.size(); ++i)
 				{
-					d = 0.0f;
+					if (lightRay.RaySphereIntersection(spheres[i]) == true)
+					{
+						occluded = true;
+						break;
+					}
 				}
-				gfx.PutPixel(x, y, spheres[hitIndex].color * light.color * d);
+				if (occluded == false)
+				{
+					float d = Dot(normal, lightRayDirection);
+					if (d < 0.0f)
+					{
+						d = 0.0f;
+					}
+					gfx.PutPixel(x, y, spheres[hitIndex].color * light.color * d);
+				}
 			}
 		}
 	}
