@@ -39,6 +39,10 @@ Game::Game( MainWindow& wnd )
 		Sphere(Vec3(-20,15,70),11,Color(255,255,255)),// S0
 		Sphere(Vec3(20,-15,75),13,Color(200,55,200))// S1
 	};
+	lights = {
+		Light(Vec3(20, 25, 25), Colors::White),
+		Light(Vec3(20, 25, 75), Colors::White)
+	};
 }
 
 void Game::Go()
@@ -105,8 +109,6 @@ void Game::ComposeFrame()
 	Vec3 p1 = screenCenter + Vec3(1, 1, 0)*rot;
 	Vec3 p2 = screenCenter + Vec3(-1, -1, 0)*rot;
 	
-	Light light = Light(Vec3(20, 25, 25), Colors::White);
-
 	// Create a ray for every pixel on the screen
 	for (int y = 0; y < Graphics::ScreenHeight; ++y)
 	{
@@ -128,32 +130,38 @@ void Game::ComposeFrame()
 			}
 			if (hitIndex != -1)
 			{
-				Vec3 hitPoint = ray.origin + ray.direction*ray.length;
-				Vec3 normal = (hitPoint - spheres[hitIndex].position);
-				normal.Normalize();
-				Vec3 lightRayDirection = (light.position - hitPoint);
-				float length = lightRayDirection.Len();
-				lightRayDirection.Normalize();
-				Ray lightRay = Ray(hitPoint, lightRayDirection, length);
-				// If any of the spheres occlude the light
-				bool occluded = false;
-				for (int i = 0; i < spheres.size(); ++i)
+				FColor finalColor = Color(0, 0, 0, 0);
+				for (int iLight = 0; iLight < lights.size(); ++iLight)
 				{
-					if (lightRay.RaySphereIntersection(spheres[i]) == true)
+					Vec3 hitPoint = ray.origin + ray.direction*ray.length;
+					Vec3 normal = (hitPoint - spheres[hitIndex].position);
+					normal.Normalize();
+					Vec3 lightRayDirection = (lights[iLight].position - hitPoint);
+					float length = lightRayDirection.Len();
+					lightRayDirection.Normalize();
+					Ray lightRay = Ray(hitPoint, lightRayDirection, length);
+					// If any of the spheres occlude the light
+					bool occluded = false;
+					for (int i = 0; i < spheres.size(); ++i)
 					{
-						occluded = true;
-						break;
+						if (lightRay.RaySphereIntersection(spheres[i]) == true)
+						{
+							occluded = true;
+							break;
+						}
+					}
+					if (occluded == false)
+					{
+						float d = Dot(normal, lightRayDirection);
+						if (d < 0.0f)
+						{
+							d = 0.0f;
+						}
+						finalColor += lights[iLight].color*spheres[hitIndex].color*d;
 					}
 				}
-				if (occluded == false)
-				{
-					float d = Dot(normal, lightRayDirection);
-					if (d < 0.0f)
-					{
-						d = 0.0f;
-					}
-					gfx.PutPixel(x, y, spheres[hitIndex].color * light.color * d);
-				}
+				finalColor.Clamp();
+				gfx.PutPixel(x, y, finalColor);
 			}
 		}
 	}

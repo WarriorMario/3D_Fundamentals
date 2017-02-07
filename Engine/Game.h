@@ -22,6 +22,7 @@
 
 #include "Graphics.h"
 #include "Sphere.h"
+#include "Light.h"
 
 class Game
 {
@@ -46,4 +47,5 @@ private:
 	float theta_x = 0.0f, theta_y = 0.0f;
 	Vec3 pos{ 0,0,0 };
 	std::vector<Sphere> spheres;
+	std::vector<Light> lights;
 };
