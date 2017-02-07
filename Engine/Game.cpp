@@ -22,6 +22,9 @@
 #include "Game.h"
 #include "Ray.h"
 #include "Sphere.h"
+#include "Mat3.h"
+#include "Light.h"
+using namespace std;
 
 Game::Game( MainWindow& wnd )
 	:
@@ -41,39 +44,72 @@ void Game::Go()
 void Game::UpdateModel()
 {
 	const float dt = 1.0f / 60.0f;
+	if (wnd.kbd.KeyIsPressed('W'))
+	{
+		theta_x = wrap_angle(theta_x - dTheta * dt);
+	}
+	if (wnd.kbd.KeyIsPressed('A'))
+	{
+		theta_y = wrap_angle(theta_y - dTheta * dt);
+	}
+	if (wnd.kbd.KeyIsPressed('S'))
+	{
+		theta_x = wrap_angle(theta_x + dTheta * dt);
+	}
+	if (wnd.kbd.KeyIsPressed('D'))
+	{
+		theta_y = wrap_angle(theta_y + dTheta * dt);
+	}
+
+	const Mat3 rot =
+		Mat3::RotationX(theta_x)*
+		Mat3::RotationY(theta_y);
+	if (wnd.kbd.KeyIsPressed(VK_UP))
+	{
+		pos += Vec3(0, 0, 1)*rot;
+	}
+	if (wnd.kbd.KeyIsPressed(VK_DOWN))
+	{
+		pos += Vec3(0, 0, -1)*rot;
+	}
+	if (wnd.kbd.KeyIsPressed(VK_LEFT))
+	{
+		pos += Vec3(-1, 0, 0)*rot;
+	}
+	if (wnd.kbd.KeyIsPressed(VK_RIGHT))
+	{
+		pos += Vec3(1, 0, 0)*rot;
+	}
 }
 
 void Game::ComposeFrame()
 {
 	// Camera and screen
-	Vec3 camPos = Vec3(0, 0, 0);
-	Vec3 viewDir = Vec3(0, 0, 1);
+	Vec3 camPos = pos;
+	const Mat3 rot =
+		Mat3::RotationX(theta_x)*
+		Mat3::RotationY(theta_y);
+	Vec3 viewDir = Vec3(0, 0, 1)*rot;
 	float screenDistance = 1.0f;
 
 	Vec3 screenCenter = camPos + viewDir*screenDistance;
-	Vec3 p0 = screenCenter + Vec3(-1, 1, 0);
-	Vec3 p1 = screenCenter + Vec3(1, 1, 0);
-	Vec3 p2 = screenCenter + Vec3(-1, -1, 0);
-
-	Sphere spheres[] = {
-		Sphere(Vec3(1e5,0, -2500)  ,1e5), //Right wall
-		Sphere(Vec3(-1e5 ,0, -2500),1e5), //Left  wall 
-		Sphere(Vec3(0,0,1e5 + 100),1e5),// Back wall
-		Sphere(Vec3(0, -1e5, -2500),1e5),// Bottom wall 
-		Sphere(Vec3(0,1e5,2500),1e5),// Top wall
-		Sphere(Vec3(0,0,-1e5 - 100),1e5),// Front wall
-		Sphere(Vec3(-20,15,70)         ,11),// S0
-		Sphere(Vec3(20,-15,75),13)// S1
+	Vec3 p0 = screenCenter + Vec3(-1, 1, 0)*rot;
+	Vec3 p1 = screenCenter + Vec3(1, 1, 0)*rot;
+	Vec3 p2 = screenCenter + Vec3(-1, -1, 0)*rot;
+	
+	vector<Sphere> spheres = {
+		Sphere(Vec3(1e5,0, -2500)  ,1e5,Color(255,0,0)), //Right wall
+		Sphere(Vec3(-1e5 ,0, -2500),1e5,Color(0,255,0)), //Left  wall 
+		Sphere(Vec3(0,0,1e5 + 100),1e5,Color(0,0,255)),// Back wall
+		Sphere(Vec3(0, -1e5, -2500),1e5,Color(200,55,0)),// Bottom wall 
+		Sphere(Vec3(0,1e5,2500),1e5,Color(55,200,0)),// Top wall
+		Sphere(Vec3(0,0,-1e5 - 100),1e5,Color(0,55,0)),// Front wall
+		Sphere(Vec3(-20,15,70),11,Color(255,255,255)),// S0
+		Sphere(Vec3(20,-15,75),13,Color(200,55,200))// S1
 	};
-	Color colors[] = {
-		Color(255,0,0),
-		Color(0,255,0),
-		Color(0,0,255),
-		Color(200,55,0),
-		Color(200,55,0),
-		Color(0,55,0),
-		Color(255,255,255),
-		Color(200,200,200)
+	vector<Light> lights = { 
+		Light(Vec3(20, 25, 25), Colors::Cyan),
+		Light(Vec3(20, 25, 75), Colors::Magenta),
 	};
 	// Create a ray for every pixel on the screen
 	for (int y = 0; y < Graphics::ScreenHeight; ++y)
@@ -85,13 +121,49 @@ void Game::ComposeFrame()
 			Vec3 pointOnScreen = p0 + (p1 - p0)*u + (p2 - p0)*v;
 			Vec3 rayDirection = pointOnScreen - camPos;
 			Ray ray = Ray(camPos, rayDirection.GetNormalized(), 1000000000000.0f);
-
-			for (int i = 0; i < 8; ++i)
+			// Intersect spheres
+			int hitIndex = -1;
+			for (int i = 0; i < spheres.size(); ++i)
 			{
 				if (ray.RaySphereIntersection(spheres[i]) == true)
 				{
-					gfx.PutPixel(x, y, colors[i]);
+					hitIndex = i;
 				}
+			}
+			if (hitIndex != -1)
+			{
+				FColor finalColor = Color(0,0,0,0);
+				for (int iLight = 0; iLight < lights.size(); ++iLight)
+				{
+					Vec3 hitPoint = ray.origin + ray.direction*ray.length;
+					Vec3 normal = (hitPoint - spheres[hitIndex].position);
+					normal.Normalize();
+					Vec3 lightRayDirection = (lights[iLight].position - hitPoint);
+					float length = lightRayDirection.Len();
+					lightRayDirection.Normalize();
+					Ray lightRay = Ray(hitPoint, lightRayDirection, length);
+					// If any of the spheres occlude the light
+					bool occluded = false;
+					for (int i = 0; i < 8; ++i)
+					{
+						if (lightRay.RaySphereIntersection(spheres[i]) == true)
+						{
+							occluded = true;
+							break;
+						}
+					}
+					if (occluded == false)
+					{
+						float d = Dot(normal, lightRayDirection);
+						if (d < 0.0f)
+						{
+							d = 0.0f;
+						}
+						finalColor += lights[iLight].color*spheres[hitIndex].color*d;
+					}
+				}
+				finalColor.Clamp();
+				gfx.PutPixel(x, y, finalColor);
 			}
 		}
 	}

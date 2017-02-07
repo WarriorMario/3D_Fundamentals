@@ -19,7 +19,7 @@
 *	along with The Chili DirectX Framework.  If not, see <http://www.gnu.org/licenses/>.  *
 ******************************************************************************************/
 #pragma once
-
+class FColor;
 class Color
 {
 public:
@@ -46,6 +46,7 @@ public:
 		:
 		Color( (x << 24u) | col.dword )
 	{}
+	constexpr Color(const FColor& col);
 	Color& operator =( Color color )
 	{
 		dword = color.dword;
@@ -92,6 +93,92 @@ public:
 		dword = (dword & 0xFFFFFF00u) | b;
 	}
 };
+
+class FColor
+{
+public:
+	float a;
+	float r;
+	float g;
+	float b;
+	constexpr FColor() : a(),r(),g(),b() {}
+	constexpr FColor(float a, float r, float g, float b) 
+		: 
+		a(a),
+		r(r),
+		g(g),
+		b(b)
+	{}
+	constexpr FColor(const FColor& col)
+		:
+		a(col.a),
+		r(col.r),
+		g(col.g),
+		b(col.b)
+	{}
+	constexpr FColor(const Color& col)
+		:
+		a(((float)((col.dword & 0xff000000) >> 24)) / 255.0f),
+		r(((float)((col.dword & 0x00ff0000) >> 16)) / 255.0f),
+		g(((float)((col.dword & 0x0000ff00) >> 8)) / 255.0f),
+		b(((float)((col.dword & 0x000000ff))) / 255.0f)
+	{}
+
+
+	FColor operator+(const FColor &rhs)const
+	{
+		return FColor(*this) += rhs;
+	}
+	FColor& operator+=(const FColor &rhs)
+	{
+		a += rhs.a;
+		r += rhs.r;
+		g += rhs.g;
+		b += rhs.b;
+		return *this;
+	}
+	FColor operator*(const FColor &rhs)const
+	{
+		return FColor(*this) *= rhs;
+	}
+	FColor& operator*=(const FColor &rhs)
+	{
+		a *= rhs.a;
+		r *= rhs.r;
+		g *= rhs.g;
+		b *= rhs.b;
+		return *this;
+	}
+	FColor operator*(float rhs)const
+	{
+		return FColor(*this) *= rhs;
+	}
+	FColor& operator*=(float rhs)
+	{
+		a *= rhs;
+		r *= rhs;
+		g *= rhs;
+		b *= rhs;
+		return *this;
+	}
+
+	void Clamp()
+	{
+		a = a <= 0.0f ? 0.0f : a >= 1.0f ? 1.0f : a;
+		r = r <= 0.0f ? 0.0f : r >= 1.0f ? 1.0f : r;
+		g = g <= 0.0f ? 0.0f : g >= 1.0f ? 1.0f : g;
+		b = b <= 0.0f ? 0.0f : b >= 1.0f ? 1.0f : b;
+	}
+};
+
+constexpr Color::Color(const FColor& col)
+	:
+	Color(
+	(unsigned char)(col.a * 255.0f),
+	(unsigned char)(col.r * 255.0f),
+	(unsigned char)(col.g * 255.0f),
+	(unsigned char)(col.b * 255.0f))
+{}
 
 namespace Colors
 {

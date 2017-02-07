@@ -147,6 +147,7 @@
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="IndexedLineList.h" />
     <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="Mat2.h" />
     <ClInclude Include="Mat3.h" />

@@ -21,6 +21,7 @@
 #pragma once
 
 #include "Graphics.h"
+#include "Vec3.h"
 
 class Game
 {
@@ -41,4 +42,7 @@ private:
 	/********************************/
 	/*  User Variables              */
 	/********************************/
+	static constexpr float dTheta = PI;
+	float theta_x = 0.0f, theta_y = 0.0f;
+	Vec3 pos{0,0,0};
 };
