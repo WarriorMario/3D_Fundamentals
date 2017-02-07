@@ -21,7 +21,6 @@
 #include "MainWindow.h"
 #include "Game.h"
 #include "Ray.h"
-#include "Sphere.h"
 #include "Mat3.h"
 
 Game::Game( MainWindow& wnd )
@@ -29,6 +28,16 @@ Game::Game( MainWindow& wnd )
 	wnd( wnd ),
 	gfx( wnd )
 {
+	spheres = {
+		Sphere(Vec3(1e5,0, -2500)  ,1e5,Color(255,0,0)), //Right wall
+		Sphere(Vec3(-1e5 ,0, -2500),1e5,Color(0,255,0)), //Left  wall 
+		Sphere(Vec3(0,0,1e5 + 100),1e5,Color(0,0,255)),// Back wall
+		Sphere(Vec3(0, -1e5, -2500),1e5,Color(200,55,0)),// Bottom wall 
+		Sphere(Vec3(0,1e5,2500),1e5,Color(55,200,0)),// Top wall
+		Sphere(Vec3(0,0,-1e5 - 100),1e5,Color(0,55,0)),// Front wall
+		Sphere(Vec3(-20,15,70),11,Color(255,255,255)),// S0
+		Sphere(Vec3(20,-15,75),13,Color(200,55,200))// S1
+	};
 }
 
 void Game::Go()
@@ -94,9 +103,7 @@ void Game::ComposeFrame()
 	Vec3 p0 = screenCenter + Vec3(-1, 1, 0)*rot;
 	Vec3 p1 = screenCenter + Vec3(1, 1, 0)*rot;
 	Vec3 p2 = screenCenter + Vec3(-1, -1, 0)*rot;
-
-	Sphere sphere = Sphere(Vec3(0, 0, 5), 1.0f);
-
+	
 	// Create a ray for every pixel on the screen
 	for (int y = 0; y < Graphics::ScreenHeight; ++y)
 	{
@@ -107,10 +114,13 @@ void Game::ComposeFrame()
 			Vec3 pointOnScreen = p0 + (p1 - p0)*u + (p2 - p0)*v;
 			Vec3 rayDirection = pointOnScreen - camPos;
 			Ray ray = Ray(camPos, rayDirection.GetNormalized(), 10000000.0f);
-
-			if (ray.RaySphereIntersection(sphere) == true)
+			// Intersect all spheres
+			for (int i = 0; i < spheres.size(); ++i)
 			{
-				gfx.PutPixel(x, y, Color(255, 0, 0));
+				if (ray.RaySphereIntersection(spheres[i]) == true)
+				{
+					gfx.PutPixel(x, y, spheres[i].color);
+				}
 			}
 		}
 	}

@@ -21,7 +21,7 @@
 #pragma once
 
 #include "Graphics.h"
-#include "Vec3.h"
+#include "Sphere.h"
 
 class Game
 {
@@ -45,4 +45,5 @@ private:
 	static constexpr float dTheta = PI;
 	float theta_x = 0.0f, theta_y = 0.0f;
 	Vec3 pos{ 0,0,0 };
+	std::vector<Sphere> spheres;
 };
